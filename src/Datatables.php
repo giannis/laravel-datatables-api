@@ -26,6 +26,13 @@ class Datatables
     protected $options = [];
 
     /**
+     * Holds the driver name
+     *
+     * @var string
+     */
+    protected $driver;
+
+    /**
      * The Eloquent model
      *
      * @var \Illuminate\Database\Eloquent\Model
@@ -81,6 +88,8 @@ class Datatables
         $this->queryBuilder = $this->model->query();
 
         $this->relations = method_exists($this->model, 'getRelationFields') ? $this->model->getRelationFields() : [];
+
+        $this->driver = $this->queryBuilder->getConnection()->getDriverName();
     }
 
     /**
@@ -293,6 +302,23 @@ class Datatables
                                                     }
                                                 } elseif (Str::startsWith($searchValue, '|') && Str::endsWith($searchValue, '|')) {
                                                     $query->orWhere($otherTable.'.'.$otherField, trim($searchValue, '|'));
+                                                } elseif (in_array($otherField, config('datatables.filters.date_columns', []))) {
+                                                    $dateFormat = strtr(config('datatables.filters.date_display_format', 'd/m/Y'), [
+                                                        'd' => '%d', 'j' => '%e', 'm' => '%m', 'Y' => '%Y', 'y' => '%y',
+                                                    ]);
+                                                    $searchValues = [$searchValue];
+
+                                                    if (Str::contains($searchValue, '/') || Str::contains($searchValue, '-')) {
+                                                        $searchValues[] = strtr($searchValue, '/-', '-/');
+                                                    }
+
+                                                    $dateExpr = $this->driver === 'sqlite'
+                                                        ? "strftime('".$dateFormat."', `$otherTable`.`$otherField`)"
+                                                        : "DATE_FORMAT(`$otherTable`.`$otherField`, '".$dateFormat."')";
+                                                    foreach ($searchValues as $value) {
+                                                        $query->orWhere($otherTable.'.'.$otherField, 'LIKE', '%'.$value.'%');
+                                                        $query->orWhereRaw($dateExpr.' LIKE ?', ['%'.$value.'%']);
+                                                    }
                                                 } else {
                                                     $query->orWhere($otherTable.'.'.$otherField, 'LIKE', '%'.$searchValue.'%');
                                                 }

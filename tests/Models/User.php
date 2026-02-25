@@ -84,7 +84,7 @@ class User extends Model
     public function getRelationFields()
     {
         return [
-            'country' => ['name'],
+            'country' => ['name', 'founded_at'],
             'userLogins' => [],
             'userNameAndEmail' => ['name', 'email'],
         ];

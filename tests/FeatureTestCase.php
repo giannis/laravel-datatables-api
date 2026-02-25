@@ -21,7 +21,7 @@ class FeatureTestCase extends TestCase
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
 
         User::factory()->has(UserLogin::factory()->count(rand(1, 5)))->count(49)->create();
-        $this->country = Country::factory()->create();
+        $this->country = Country::factory()->create(['founded_at' => '1995-06-15']);
         $this->user = User::factory()->has(UserLogin::factory()->count(rand(10, 20)))->create([
             'name' => 'George Papakitsos',
             'email' => 'papakitsos_george@yahoo.gr',
@@ -57,8 +57,10 @@ class FeatureTestCase extends TestCase
             ],
             'filters' => [
                 'date_format' => 'd/m/Y',
+                'date_display_format' => 'd/m/Y',
                 'date_delimiter' => '-dateDelimiter-',
                 'null_delimiter' => '-nullDelimiter-',
+                'date_columns' => ['founded_at'],
             ],
         ]);
     }

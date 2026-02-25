@@ -17,6 +17,12 @@ class Country extends Model
      */
     public $timestamps = false;
 
+    protected $fillable = ['name', 'founded_at'];
+
+    protected $casts = [
+        'founded_at' => 'date',
+    ];
+
     /**
      * Create a new factory instance for the model.
      *

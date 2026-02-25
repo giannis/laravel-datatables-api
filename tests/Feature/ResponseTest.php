@@ -164,6 +164,18 @@ class ResponseTest extends FeatureTestCase
         $this->assertEquals($this->user->id, $response->getData(true)['data'][0]['id']);
     }
 
+    public function testRelationDateColumnSearch()
+    {
+        foreach (['15/06/1995', '15-06-1995'] as $searchValue) {
+            $request_data = $this->getRequestDataSample();
+            $request_data['columns'][5]['search']['value'] = $searchValue;
+            $response = $this->get('/'.$this->route_prefix.'/User?'.http_build_query($request_data));
+            $response->assertStatus(200);
+            $response->assertJsonCount(1, 'data');
+            $this->assertEquals($this->user->id, $response->getData(true)['data'][0]['id']);
+        }
+    }
+
     public function testSearchByHasOneColumn()
     {
         foreach (['Papakitsos', 'papakitsos_george@yahoo.gr'] as $searchTerm) {
